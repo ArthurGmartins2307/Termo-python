@@ -14,9 +14,11 @@ if len(palavra) != 5:
     print('Palavra inválida')
     print(palavra)
 
+    
 for i in range(6):
     print('== i° TENTATIVA ==')
     tentativa = input('Escreva a palavra: ')
-    for x in palavra:
-        print(x)
-        
+    tentativa = list(tentativa.lower())
+    for p in palavra:
+        for t in tentativa:
+            if t == p & 
