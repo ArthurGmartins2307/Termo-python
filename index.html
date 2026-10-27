@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Termo — Jogo de Palavras</title>
+  <meta name="description" content="Jogo de palavras para dois jogadores. Descubra a palavra secreta de 5 letras em ate 6 tentativas!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="light" id="body">
+
+  <!-- SETUP SCREEN -->
+  <div id="setup-screen" class="screen active">
+    <div class="setup-card">
+      <div class="logo-area">
+        <h1 class="logo-title">TERMO</h1>
+        <p class="logo-sub">Jogo de palavras para dois jogadores</p>
+      </div>
+      <div class="how-to-play">
+        <h2>Como jogar</h2>
+        <ul>
+          <li>O <strong>Jogador 1</strong> digita uma palavra secreta de 5 letras</li>
+          <li>O <strong>Jogador 2</strong> tem ate <strong>6 tentativas</strong> para adivinhar</li>
+          <li>Apos cada palpite, as cores revelam dicas:</li>
+        </ul>
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-tile correct">A</div>
+            <span>Letra certa, posicao certa</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-tile present">A</div>
+            <span>Letra certa, posicao errada</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-tile absent">A</div>
+            <span>Letra nao esta na palavra</span>
+          </div>
+        </div>
+      </div>
+      <div class="player-names">
+        <div class="input-group">
+          <label for="player1-name">Nome do Jogador 1 (vai digitar a palavra)</label>
+          <input type="text" id="player1-name" placeholder="Ex: Arthur" maxlength="20" autocomplete="off" />
+        </div>
+        <div class="input-group">
+          <label for="player2-name">Nome do Jogador 2 (vai adivinhar)</label>
+          <input type="text" id="player2-name" placeholder="Ex: Joao" maxlength="20" autocomplete="off" />
+        </div>
+      </div>
+      <button id="start-btn" class="btn btn-primary" onclick="goToWordInput()">Comecar Jogo</button>
+    </div>
+    <button class="theme-toggle" id="theme-toggle-setup" onclick="toggleTheme()" title="Alternar tema">
+      <span id="theme-icon-setup">&#127769;</span>
+    </button>
+  </div>
+
+  <!-- WORD INPUT SCREEN -->
+  <div id="word-screen" class="screen">
+    <div class="word-card">
+      <div class="word-header">
+        <div class="player-badge" id="p1-badge">
+          <span id="p1-name-display">Jogador 1</span>
+        </div>
+        <h2>Digite a palavra secreta</h2>
+        <p class="word-hint">5 letras &bull; somente o Jogador 1 vera isso</p>
+      </div>
+      <div class="secret-input-area">
+        <div class="secret-tiles" id="secret-tiles">
+          <div class="tile secret-tile" id="st-0"></div>
+          <div class="tile secret-tile" id="st-1"></div>
+          <div class="tile secret-tile" id="st-2"></div>
+          <div class="tile secret-tile" id="st-3"></div>
+          <div class="tile secret-tile" id="st-4"></div>
+        </div>
+        <input
+          type="password"
+          id="secret-word-input"
+          class="hidden-input"
+          maxlength="5"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          oninput="onSecretInput(this.value)"
+          onkeydown="onSecretKeydown(event)"
+        />
+      </div>
+      <div class="word-error" id="word-error"></div>
+      <button id="confirm-word-btn" class="btn btn-primary" onclick="confirmWord()">Confirmar Palavra</button>
+      <button class="btn btn-ghost" onclick="goToSetup()">Voltar</button>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
+      <span id="theme-icon-word">&#127769;</span>
+    </button>
+  </div>
+
+  <!-- HANDOVER SCREEN -->
+  <div id="handover-screen" class="screen">
+    <div class="handover-card">
+      <div class="handover-icon">&#128260;</div>
+      <h2 id="handover-title">Hora de passar o dispositivo!</h2>
+      <p id="handover-desc">A palavra foi definida. Passe o dispositivo para o <strong id="p2-name-handover">Jogador 2</strong> adivinhar!</p>
+      <button id="play-btn" class="btn btn-primary" onclick="startGame()">Estou pronto para jogar!</button>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
+      <span id="theme-icon-handover">&#127769;</span>
+    </button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="screen">
+    <header class="game-header">
+      <div class="game-header-inner">
+        <div class="game-title-group">
+          <h1 class="game-logo">TERMO</h1>
+          <p class="attempt-counter" id="attempt-counter">Tentativa 1 de 6</p>
+        </div>
+        <div class="timer-display" id="timer-display">00:00</div>
+        <div class="game-controls">
+          <div class="player-badge" id="p2-badge">
+            <span id="p2-name-display">Jogador 2</span>
+          </div>
+          <button class="theme-toggle inline" onclick="toggleTheme()" title="Alternar tema">
+            <span id="theme-icon-game">&#127769;</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    <main class="game-main">
+      <div class="board" id="board"></div>
+      <div class="game-message" id="game-message"></div>
+      <div class="keyboard" id="keyboard">
+        <div class="keyboard-row">
+          <button class="key" id="key-q" onclick="pressKey('q')">Q</button>
+          <button class="key" id="key-w" onclick="pressKey('w')">W</button>
+          <button class="key" id="key-e" onclick="pressKey('e')">E</button>
+          <button class="key" id="key-r" onclick="pressKey('r')">R</button>
+          <button class="key" id="key-t" onclick="pressKey('t')">T</button>
+          <button class="key" id="key-y" onclick="pressKey('y')">Y</button>
+          <button class="key" id="key-u" onclick="pressKey('u')">U</button>
+          <button class="key" id="key-i" onclick="pressKey('i')">I</button>
+          <button class="key" id="key-o" onclick="pressKey('o')">O</button>
+          <button class="key" id="key-p" onclick="pressKey('p')">P</button>
+        </div>
+        <div class="keyboard-row">
+          <button class="key" id="key-a" onclick="pressKey('a')">A</button>
+          <button class="key" id="key-s" onclick="pressKey('s')">S</button>
+          <button class="key" id="key-d" onclick="pressKey('d')">D</button>
+          <button class="key" id="key-f" onclick="pressKey('f')">F</button>
+          <button class="key" id="key-g" onclick="pressKey('g')">G</button>
+          <button class="key" id="key-h" onclick="pressKey('h')">H</button>
+          <button class="key" id="key-j" onclick="pressKey('j')">J</button>
+          <button class="key" id="key-k" onclick="pressKey('k')">K</button>
+          <button class="key" id="key-l" onclick="pressKey('l')">L</button>
+          <button class="key" id="key-c2" onclick="pressKey('c')">C</button>
+        </div>
+        <div class="keyboard-row">
+          <button class="key key-wide" id="key-enter" onclick="submitGuess()">ENTER</button>
+          <button class="key" id="key-z" onclick="pressKey('z')">Z</button>
+          <button class="key" id="key-x" onclick="pressKey('x')">X</button>
+          <button class="key" id="key-cv" onclick="pressKey('c')">C</button>
+          <button class="key" id="key-v" onclick="pressKey('v')">V</button>
+          <button class="key" id="key-b" onclick="pressKey('b')">B</button>
+          <button class="key" id="key-n" onclick="pressKey('n')">N</button>
+          <button class="key" id="key-m" onclick="pressKey('m')">M</button>
+          <button class="key key-wide" id="key-backspace" onclick="deleteLetter()">&#9003;</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="result-screen" class="screen">
+    <div class="result-card">
+      <div class="result-icon" id="result-icon">&#127881;</div>
+      <h2 class="result-title" id="result-title">Parabens!</h2>
+      <p class="result-msg" id="result-msg"></p>
+      <div class="result-word-reveal">
+        <span>A palavra era:</span>
+        <div class="result-word" id="result-word"></div>
+      </div>
+      <div class="result-stats" id="result-stats"></div>
+      <div class="result-actions">
+        <button class="btn btn-primary" onclick="playAgain()">Jogar Novamente</button>
+        <button class="btn btn-ghost" onclick="goToSetup()">Menu Principal</button>
+      </div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
+      <span id="theme-icon-result">&#127769;</span>
+    </button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
