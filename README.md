@@ -51,8 +51,13 @@ Além de reproduzir a mecânica do Termo, o projeto representa um exercício pr�
    ```bash
    cd Termo-python
    ```
+3. Instale a biblioteca necessária:
 
-3. Execute o arquivo Python principal:
+   ```bash
+   python -m pip install rich
+   ```
+
+4. Execute o arquivo Python principal:
 
    ```bash
    python termo.py
