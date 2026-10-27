@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // TERMO - Game Logic (Two-Player)
 // ============================================================
 
@@ -16,6 +16,11 @@ const WORD_LENGTH = 5;
 
 // Keyboard state: track best color per letter
 const letterStates = {};
+
+// ---- Timer State ----
+let timerInterval = null;
+let timerSeconds = 0;
+let timerStarted = false;
 
 // ---- SCREEN NAVIGATION ----
 function showScreen(id) {
@@ -78,6 +83,12 @@ function startGame() {
     k.classList.remove('correct', 'present', 'absent');
   });
 
+  // Reset timer
+  stopTimer();
+  timerSeconds = 0;
+  timerStarted = false;
+  updateTimerDisplay();
+
   // Update attempt counter
   updateCounter();
 
@@ -127,6 +138,12 @@ document.addEventListener('keydown', (e) => {
       submitGuess();
     } else if (e.key === 'Backspace') {
       deleteLetter();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      moveCursor(-1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      moveCursor(1);
     } else if (/^[a-zA-ZçÇãÃõÕêÊéÉáÁíÍóÓúÚâÂôÔ]$/.test(e.key)) {
       pressKey(e.key.toLowerCase());
     }
@@ -160,6 +177,15 @@ function deleteLetter() {
   highlightActiveTile();
 }
 
+// ---- ARROW KEY CURSOR NAVIGATION ----
+function moveCursor(dir) {
+  // Move cursor left/right within the filled tiles of current row
+  const newCol = currentCol + dir;
+  if (newCol < 0 || newCol > currentGuess.length) return;
+  currentCol = newCol;
+  highlightActiveTile();
+}
+
 function highlightActiveTile() {
   // Remove active from all in current row
   for (let c = 0; c < WORD_LENGTH; c++) {
@@ -168,6 +194,13 @@ function highlightActiveTile() {
   if (currentCol < WORD_LENGTH) {
     getTile(currentRow, currentCol).classList.add('active-tile');
   }
+}
+
+// ---- VOWELS CHECK ----
+const VOWELS = new Set(['a','e','i','o','u','á','é','í','ó','ú','â','ê','ô','ã','õ']);
+
+function isAllVowels(letters) {
+  return letters.every(l => VOWELS.has(l.toLowerCase()));
 }
 
 function submitGuess() {
@@ -179,6 +212,19 @@ function submitGuess() {
     return;
   }
 
+  // Block combinations of only vowels
+  if (isAllVowels(currentGuess)) {
+    showMessage('Palavra não pode ter só vogais!');
+    shakeRow(currentRow);
+    return;
+  }
+
+  // Start timer on first guess
+  if (!timerStarted) {
+    timerStarted = true;
+    startTimer();
+  }
+
   const guess = currentGuess.map(normalize).join('').split('');
   const result = evaluateGuess(guess, secretWord.map(normalize));
 
@@ -186,9 +232,11 @@ function submitGuess() {
     const won = result.every(r => r === 'correct');
     if (won) {
       gameOver = true;
+      stopTimer();
       setTimeout(() => showResult(true, currentRow + 1), 400);
     } else if (currentRow + 1 >= MAX_ATTEMPTS) {
       gameOver = true;
+      stopTimer();
       setTimeout(() => showResult(false, MAX_ATTEMPTS), 400);
     } else {
       currentRow++;
@@ -308,12 +356,40 @@ function updateCounter() {
     `Tentativa ${currentRow + 1} de ${MAX_ATTEMPTS}`;
 }
 
+// ---- TIMER ----
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timer-display');
+  if (!el) return;
+  const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+  const s = (timerSeconds % 60).toString().padStart(2, '0');
+  el.textContent = `${m}:${s}`;
+  if (timerStarted) el.classList.add('running');
+  else el.classList.remove('running');
+}
+
 // ---- RESULT SCREEN ----
 function showResult(won, attempts) {
   const icon  = won ? '&#127881;' : '&#128546;';
   const title = won ? `Parab\u00e9ns, ${player2Name}!` : `Que pena!`;
+  const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+  const s = (timerSeconds % 60).toString().padStart(2, '0');
+  const timeStr = `${m}:${s}`;
   const msg   = won
-    ? `Voc\u00ea acertou em <strong>${attempts}</strong> tentativa${attempts > 1 ? 's' : ''}!`
+    ? `Voc\u00ea acertou em <strong>${attempts}</strong> tentativa${attempts > 1 ? 's' : ''} em <strong>${timeStr}</strong>!`
     : `N\u00e3o foi dessa vez. Tente novamente!`;
 
   document.getElementById('result-icon').innerHTML  = icon;
@@ -338,8 +414,8 @@ function showResult(won, attempts) {
       <span class="stat-label">Tentativas</span>
     </div>
     <div class="stat-item">
-      <span class="stat-value">${WORD_LENGTH}</span>
-      <span class="stat-label">Letras</span>
+      <span class="stat-value">${timeStr}</span>
+      <span class="stat-label">Tempo</span>
     </div>
     <div class="stat-item">
       <span class="stat-value">${won ? Math.round(((MAX_ATTEMPTS - attempts + 1) / MAX_ATTEMPTS) * 100) : 0}%</span>
@@ -421,7 +497,10 @@ function applyTheme() {
   body.classList.toggle('dark', isDark);
   body.classList.toggle('light', !isDark);
 
-  const icon = isDark ? '\u2600\uFE0F' : '\uD83C\uDF19';
+  // SVG icons - sun for dark mode (click to go light), moon for light mode (click to go dark)
+  const sunSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+  const moonSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+  const icon = isDark ? sunSVG : moonSVG;
   document.querySelectorAll('[id^="theme-icon"]').forEach(el => el.innerHTML = icon);
 }
 

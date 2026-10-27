@@ -1,4 +1,4 @@
-﻿/* ============================================
+/* ============================================
    TERMO - Design System
    ============================================ */
 
@@ -116,7 +116,6 @@ body {
   border-radius: 50%;
   width: 44px;
   height: 44px;
-  font-size: 20px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -124,6 +123,7 @@ body {
   box-shadow: 0 2px 8px var(--shadow);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   z-index: 100;
+  color: var(--text-primary);
 }
 
 .theme-toggle:hover {
@@ -135,7 +135,6 @@ body {
   position: static;
   width: 38px;
   height: 38px;
-  font-size: 18px;
 }
 
 /* ============================================
@@ -206,10 +205,7 @@ body {
   font-size: 52px;
   font-weight: 900;
   letter-spacing: 10px;
-  background: linear-gradient(135deg, var(--accent), #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
   line-height: 1;
   margin-bottom: 6px;
 }
@@ -360,15 +356,6 @@ body {
   margin-bottom: 10px;
 }
 
-.player-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.player-dot.p1 { background: var(--accent); }
-.player-dot.p2 { background: var(--color-correct-light); }
-
 .secret-input-area {
   position: relative;
   width: 100%;
@@ -416,8 +403,8 @@ body {
 }
 
 .tile.active-tile {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-glow);
+  border-color: var(--tile-border-active);
+  box-shadow: 0 0 0 2px rgba(128,128,128,0.25);
 }
 
 /* Flip animation */
@@ -556,11 +543,26 @@ body {
   font-size: 22px;
   font-weight: 900;
   letter-spacing: 5px;
-  background: linear-gradient(135deg, var(--accent), #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
   line-height: 1;
+}
+
+.timer-display {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: 'Inter', monospace;
+  color: var(--text-secondary);
+  letter-spacing: 2px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 12px;
+  transition: color 0.3s ease;
+}
+
+.timer-display.running {
+  color: var(--text-primary);
 }
 
 .attempt-counter {
