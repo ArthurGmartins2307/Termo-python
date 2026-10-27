@@ -1,2 +1,3 @@
-palavra = 'a','b','c','d'
-print(ord(palavra['a']))
+tentativa = input('Escreva a palavra: ')
+tentativa = list(tentativa.lower())
+print(tentativa)

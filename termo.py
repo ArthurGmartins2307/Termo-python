@@ -15,10 +15,17 @@ if len(palavra) != 5:
     print(palavra)
 
     
-for i in range(6):
-    print('== i° TENTATIVA ==')
+for i in range(1,7):
+    print(f'== {i}° TENTATIVA ==')
     tentativa = input('Escreva a palavra: ')
     tentativa = list(tentativa.lower())
-    for p in palavra:
-        for t in tentativa:
-            if t == p & 
+    tentativa_correta = ['','','','','']
+    for x in range(len(palavra)):
+        letra_tentativa = tentativa[x]
+        letra_palavra = palavra[x]
+        if letra_tentativa in palavra and letra_tentativa == letra_palavra:
+            print(f'|{letra_tentativa}|')
+        elif letra_tentativa in palavra and letra_tentativa != letra_palavra:
+            print(f'{letra_tentativa}')
+        else:
+            print(f'[strike]{letra_tentativa}[/strike]')
